@@ -9,4 +9,4 @@ Newest entries first.
 - Components defined following the Flightory specification: SpeedyBee F405 flight controller, Matek M10Q GPS, EMAX motors, Moonlight camera with GM3 gimbal.
 - Next: electrical system (phase 1).
 
-![Painting the parts](docs/images/airframe-painting.jpg)
+<img src="docs/images/airframe-painting.jpg" alt="Painting the parts" width="420">

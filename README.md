@@ -6,7 +6,7 @@ A 3D-printed fixed-wing VTOL UAV (Flightory Stallion) built as an aerial percept
 
 Target civilian applications: search and rescue, survey of hazardous areas (e.g. humanitarian demining support) and inspection.
 
-![Assembled airframe](docs/images/airframe-assembled.jpg)
+<img src="docs/images/airframe-assembled.jpg" alt="Assembled airframe" width="420">
 
 ## Status
 

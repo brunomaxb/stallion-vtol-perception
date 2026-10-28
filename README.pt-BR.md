@@ -6,7 +6,7 @@ VANT de asa fixa VTOL impresso em 3D (Flightory Stallion), construído como plat
 
 Aplicações civis previstas: busca e salvamento, levantamento de áreas de risco (por exemplo, apoio à desminagem humanitária) e inspeção.
 
-![Fuselagem montada](docs/images/airframe-assembled.jpg)
+<img src="docs/images/airframe-assembled.jpg" alt="Fuselagem montada" width="420">
 
 ## Status
 
