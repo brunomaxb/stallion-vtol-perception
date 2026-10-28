@@ -42,6 +42,62 @@ In practice, that means covering larger areas in less time, missing fewer target
 - Geolocation: every detection comes with latitude and longitude.
 - Metrics measured and published at each phase.
 
+## Potential contribution
+
+- **An open, end-to-end reference pipeline:** airframe, flight stack, video/telemetry downlink, detection, tracking and geolocation, documented and reproducible on low-cost hardware.
+- **Evidence under real constraints:** measured FPS, latency and geolocation error for published methods (slicing inference, RGB-thermal fusion, tracking) running on a hobby-grade VTOL and a ground station, not only on benchmark GPUs.
+- **New aerial data:** a custom dataset from terrain and conditions underrepresented in public benchmarks, published without identifiable people.
+- **Operator-centered output:** alerts with map coordinates instead of raw video, aimed at reducing workload in long missions.
+- **Transferable lessons** for tactical reconnaissance, search and rescue, hazardous-area survey and disaster response.
+
+## Related work
+
+### Aerial datasets and benchmarks
+
+| Work | What it provides | Similar to this project | Different |
+| --- | --- | --- | --- |
+| [VisDrone](https://arxiv.org/abs/2001.06303) (Zhu et al., 2020) | Large drone benchmark from 14 cities; detection, video detection and tracking tracks | Small objects seen from drones, people and vehicles | RGB only, urban scenes, mostly recorded footage |
+| [HIT-UAV](https://arxiv.org/abs/2204.03245) (Suo et al., Scientific Data 2023) | 2,898 thermal images from 60-130 m; person, car, bicycle and other vehicles | Thermal detection of people and vehicles from altitude | Thermal only; no RGB pairing or onboard system |
+| [DroneVehicle](https://arxiv.org/abs/2003.02437) (Sun et al.) | 28,439 RGB-infrared image pairs of vehicles | RGB + thermal fusion from drones | Vehicles only; offline detection |
+| [WiSARD](https://arxiv.org/abs/2309.04453) (Broyles et al., IROS 2022) | ~56,000 labeled visual and thermal images for wilderness SAR | Multi-modal data for search and rescue | Dataset, not a deployed pipeline |
+| [AIR on HERIDAL](https://arxiv.org/abs/2111.09406) (Pyrrö et al., 2021) | Person detection for land SAR; RetinaNet-based detector with box merging | Small people in large aerial images | RGB only; no tracking or geolocation |
+
+### Detection methods for small aerial targets
+
+| Work | Idea | How it relates |
+| --- | --- | --- |
+| [SAHI](https://arxiv.org/abs/2202.06934) (Akyon et al., 2022) | Slices large images into tiles for inference and fine-tuning; up to +14.5% AP on VisDrone/xView | Candidate for phases 3-4 to recover small targets; cost in FPS will be measured |
+| [TPH-YOLOv5](https://arxiv.org/abs/2108.11539) (Zhu et al., ICCV Workshops 2021) | Extra small-object head, transformer prediction heads and attention; about 7% better than the YOLOv5 baseline on VisDrone | Shows the gains of small-object heads; this project starts from current Ultralytics YOLO and compares |
+
+### RGB-thermal fusion
+
+| Work | Idea | How it relates |
+| --- | --- | --- |
+| [UA-CMDet](https://arxiv.org/abs/2003.02437) (Sun et al.) | Weights each modality by illumination and uncertainty, then merges detections with illumination-aware NMS | Reference for phase 6 late fusion at night; this project tests it with people as well as vehicles |
+
+### Tracking
+
+| Work | Idea | How it relates |
+| --- | --- | --- |
+| [ByteTrack](https://arxiv.org/abs/2110.06864) (Zhang et al., ECCV 2022) | Associates low-score boxes to existing tracks to recover occluded objects; 80.3 MOTA on MOT17 at ~30 FPS | Planned tracker in phase 6 to reduce false positives and keep moving targets |
+
+### Target geolocation from a UAV
+
+| Work | Idea | How it relates |
+| --- | --- | --- |
+| [Pan et al., Drones 2023](https://www.mdpi.com/2504-446X/7/2/87) | Monocular multi-view triangulation of moving targets; about 2.9 m error at 50 m altitude in simulation | Baseline for phase 5; this project starts with single-view projection from telemetry and terrain, then compares |
+
+### Platforms and tools
+
+[ArduPilot](https://ardupilot.org) (QuadPlane), [Ultralytics YOLO](https://docs.ultralytics.com), [ROS 2](https://docs.ros.org) and MAVLink are the open-source building blocks; the airframe is the [Flightory Stallion](https://flightory.com).
+
+### How this project builds on prior work
+
+- **Reuses:** public datasets for pretraining and comparison (VisDrone, HIT-UAV, WiSARD), SAHI for small targets, ByteTrack for tracking and ArduPilot for flight control.
+- **Compares:** each method against a plain YOLO baseline on the same data, reporting accuracy and cost (FPS, latency) side by side.
+- **Extends:** joins detection, fusion, tracking and geolocation in one system flying on low-cost hardware, where most works study one stage offline.
+- **Adds new knowledge:** measurements in real flight, a custom aerial dataset and open documentation of what worked and what did not.
+
 ## Status
 
 | Phase | Description | Status |

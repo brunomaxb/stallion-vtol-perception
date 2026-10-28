@@ -42,6 +42,32 @@ Na prática, isso significa varrer áreas maiores em menos tempo, perder menos a
 - Georreferenciamento: cada detecção sai com latitude e longitude.
 - Métricas medidas e publicadas a cada fase.
 
+## Contribuição potencial
+
+- **Um pipeline de referência aberto, de ponta a ponta:** fuselagem, controle de voo, enlace de vídeo e telemetria, detecção, rastreamento e georreferenciamento, documentados e reproduzíveis em hardware de baixo custo.
+- **Evidência sob restrições reais:** FPS, latência e erro de georreferenciamento medidos para métodos publicados (inferência por recortes, fusão RGB-térmico, rastreamento) rodando em um VTOL de baixo custo e numa estação terrestre, e não só em GPUs de benchmark.
+- **Dados aéreos novos:** um dataset próprio, de terrenos e condições pouco representados nos benchmarks públicos, publicado sem pessoas identificáveis.
+- **Saída pensada para o operador:** alertas com coordenadas no mapa em vez de vídeo bruto, para reduzir a carga em missões longas.
+- **Lições aplicáveis** a reconhecimento tático, busca e salvamento, levantamento de áreas de risco e resposta a desastres.
+
+## Trabalhos relacionados
+
+As tabelas comparativas completas, com links, estão no [README em inglês](README.md#related-work). Resumo por categoria:
+
+- **Datasets e benchmarks aéreos:** [VisDrone](https://arxiv.org/abs/2001.06303) (RGB, cidades, detecção e rastreamento), [HIT-UAV](https://arxiv.org/abs/2204.03245) (2.898 imagens térmicas a 60-130 m), [DroneVehicle](https://arxiv.org/abs/2003.02437) (28.439 pares RGB-infravermelho de veículos), [WiSARD](https://arxiv.org/abs/2309.04453) (~56 mil imagens visuais e térmicas para busca e salvamento) e [AIR no HERIDAL](https://arxiv.org/abs/2111.09406) (detecção de pessoas em busca e salvamento). Parecidos por tratarem de alvos pequenos vistos de cima; diferentes por serem dados ou detecção offline, quase sempre com um único sensor e sem georreferenciamento.
+- **Detecção de alvos pequenos:** [SAHI](https://arxiv.org/abs/2202.06934) (inferência por recortes, até +14,5% de AP no VisDrone/xView) e [TPH-YOLOv5](https://arxiv.org/abs/2108.11539) (cabeças para objetos pequenos e atenção). Serão testados nas fases 3 e 4, medindo o custo em FPS.
+- **Fusão RGB-térmico:** [UA-CMDet](https://arxiv.org/abs/2003.02437) pondera cada modalidade pela iluminação e pela incerteza. É a referência da fase 6, aqui aplicada também a pessoas.
+- **Rastreamento:** [ByteTrack](https://arxiv.org/abs/2110.06864) (80,3 MOTA no MOT17 a ~30 FPS) recupera alvos ocultos usando detecções de baixa confiança. Rastreador previsto na fase 6.
+- **Georreferenciamento de alvos:** [Pan et al., Drones 2023](https://www.mdpi.com/2504-446X/7/2/87) triangulam alvos em movimento com câmera monocular (erro de ~2,9 m a 50 m de altitude em simulação). Linha de base da fase 5.
+- **Plataformas e ferramentas:** [ArduPilot](https://ardupilot.org), [Ultralytics YOLO](https://docs.ultralytics.com), [ROS 2](https://docs.ros.org) e MAVLink; fuselagem [Flightory Stallion](https://flightory.com).
+
+### Como o projeto se apoia nesses trabalhos
+
+- **Reaproveita:** datasets públicos para pré-treino e comparação (VisDrone, HIT-UAV, WiSARD), SAHI para alvos pequenos, ByteTrack para rastreamento e ArduPilot para o controle de voo.
+- **Compara:** cada método contra um YOLO de base nos mesmos dados, mostrando lado a lado precisão e custo (FPS e latência).
+- **Amplia:** une detecção, fusão, rastreamento e georreferenciamento em um único sistema voando em hardware de baixo custo, enquanto a maioria dos trabalhos estuda uma etapa isolada e offline.
+- **Gera conhecimento novo:** medições em voo real, um dataset aéreo próprio e documentação aberta do que funcionou e do que não funcionou.
+
 ## Status
 
 | Fase | Descrição | Status |
