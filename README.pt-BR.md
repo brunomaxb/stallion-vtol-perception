@@ -242,6 +242,33 @@ flowchart LR
 - Próximo passo:
 -->
 
+## Conclusão
+
+### Resumo
+
+O Stallion VTOL Perception transforma uma fuselagem VTOL de baixo custo, impressa em 3D, em uma plataforma de percepção aérea: vídeo e telemetria seguem para uma estação terrestre, onde detecção, rastreamento, fusão de sensores e georreferenciamento transformam imagens brutas em alvos confirmados no mapa. O projeto está na fase 1; esta seção será completada conforme as próximas fases forem concluídas.
+
+### Galeria
+
+| Acabamento das peças impressas em 3D | Fuselagem montada |
+| --- | --- |
+| <img src="docs/images/airframe-painting.jpg" alt="Acabamento das peças impressas em 3D" width="300"> | <img src="docs/images/airframe-assembled.jpg" alt="Fuselagem montada" width="300"> |
+
+Imagens de voo, GIFs das detecções e capturas do mapa serão adicionados aqui a cada fase concluída.
+
+### Principais resultados
+
+Serão escritos ao fim da avaliação: resultados medidos em comparação com as metas iniciais, a contribuição de cada componente (ablação) e as principais lições dos testes em voo.
+
+### Trabalhos futuros
+
+- **Inferência embarcada (edge):** rodar o detector na própria aeronave (por exemplo, NVIDIA Jetson com TensorRT) para depender menos do enlace de vídeo.
+- **Resposta autônoma às detecções:** orbitar ou refazer a varredura sobre um alvo confirmado sem comando do operador.
+- **Busca com várias aeronaves:** dividir a área entre vários VANTs e juntar as detecções em um único mapa.
+- **Percepção mais rica:** segmentação e modelos de visão e linguagem para descrever a cena, não apenas marcar caixas.
+- **Agente de IA de apoio à missão:** um assistente que planeja as varreduras, prioriza os alertas e redige o relatório da missão.
+- **Publicação do dataset:** disponibilizar o dataset aéreo próprio (sem pessoas identificáveis) como benchmark.
+
 ## Segurança
 
 Os voos de teste seguem a regulamentação local de UAS, em área autorizada, em linha de visada e com failsafe (RTL na perda de link) configurado. Os datasets publicados aqui não terão pessoas identificáveis.

@@ -291,6 +291,33 @@ flowchart LR
 - Next:
 -->
 
+## Conclusion
+
+### Summary
+
+Stallion VTOL Perception turns a low-cost, 3D-printed VTOL airframe into an aerial perception platform: video and telemetry go to a ground station, where detection, tracking, sensor fusion and geolocation turn raw footage into confirmed targets on a map. The project is in phase 1; this section will be completed as the remaining phases are finished.
+
+### Gallery
+
+| Finishing the 3D-printed parts | Assembled airframe |
+| --- | --- |
+| <img src="docs/images/airframe-painting.jpg" alt="Finishing the 3D-printed parts" width="300"> | <img src="docs/images/airframe-assembled.jpg" alt="Assembled airframe" width="300"> |
+
+Flight footage, detection GIFs and map screenshots will be added here as each phase is completed.
+
+### Key findings
+
+To be written when the evaluation is complete: measured results against the initial targets, what each component contributed (ablation) and the main lessons from flight testing.
+
+### Future work
+
+- **Onboard (edge) inference:** run the detector on the aircraft (e.g. NVIDIA Jetson with TensorRT) to reduce dependence on the video link.
+- **Autonomous response to detections:** loiter over or re-scan a confirmed target without operator input.
+- **Multi-aircraft search:** split a search area across several UAVs and merge detections on one map.
+- **Richer perception:** segmentation and vision-language models to describe scenes, not only boxes.
+- **AI agent for mission support:** an assistant that plans survey patterns, prioritizes alerts and writes mission reports.
+- **Dataset release:** publish the custom aerial dataset (without identifiable people) as a benchmark.
+
 ## Safety
 
 Test flights follow the local UAS regulations, in authorized areas, within visual line of sight and with failsafe (RTL on link loss) configured. Datasets published here will not contain identifiable people.
