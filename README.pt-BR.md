@@ -80,7 +80,7 @@ As tabelas comparativas completas, com links, estão no [README em inglês](READ
 | 5 | Georreferenciamento das detecções (lat, lon) | Planejada |
 | 6 | Fusão de sensores e rastreamento | Planejada |
 
-Detalhes e critérios de conclusão de cada fase: [ROADMAP.md](ROADMAP.md). Diário de construção: [PROGRESS.md](PROGRESS.md).
+Detalhes e critérios de conclusão de cada fase: [ROADMAP.md](ROADMAP.md). Diário de construção: [PROGRESS.md](PROGRESS.md). Linha do tempo e discussão por fase: [Linha do tempo e discussão](#linha-do-tempo-e-discussão).
 
 ## Plataforma
 
@@ -199,6 +199,48 @@ Valores de partida, a serem revistos depois das primeiras medições.
 
 - Cada componente (fine-tuning, SAHI, rastreamento, fusão) é retirado um de cada vez para medir sua contribuição.
 - Os resultados são publicados neste repositório ao fim de cada fase, incluindo o que não funcionou.
+
+## Linha do tempo e discussão
+
+Esta seção é atualizada a cada fase concluída: o que foi feito, quais foram os resultados, o que deu errado, o que foi decidido e o que vem a seguir. As datas são registradas conforme as fases terminam.
+
+```mermaid
+flowchart LR
+  P0[Fase 0<br/>Fuselagem]:::done --> P1[Fase 1<br/>Elétrica e voo]:::active --> P2[Fase 2<br/>Enlace]:::planned --> P3[Fase 3<br/>Detecção em solo]:::planned --> P4[Fase 4<br/>Dataset próprio]:::planned --> P5[Fase 5<br/>Georreferenciamento]:::planned --> P6[Fase 6<br/>Fusão e rastreamento]:::planned
+  classDef done fill:#2e7d32,color:#fff,stroke:#1b5e20
+  classDef active fill:#f9a825,color:#000,stroke:#f57f17
+  classDef planned fill:#eceff1,color:#000,stroke:#90a4ae
+```
+
+| Fase | Status | Concluída | Resultado principal |
+| --- | --- | --- | --- |
+| 0 - Fuselagem | Concluída | 2026-10 | Fuselagem impressa, montada e pintada |
+| 1 - Elétrica e voo | Em andamento | - | - |
+| 2 - Enlace | Planejada | - | - |
+| 3 - Detecção em solo | Planejada | - | - |
+| 4 - Dataset próprio | Planejada | - | - |
+| 5 - Georreferenciamento | Planejada | - | - |
+| 6 - Fusão e rastreamento | Planejada | - | - |
+
+### Fase 0 - Fuselagem (concluída em 2026-10)
+
+- **Feito:** todas as peças impressas; fuselagem, asas e cauda em V montadas e pintadas.
+- **Decisões:** LW-PLA pelo baixo peso; ASA nas peças que pedem mais resistência e tolerância ao calor. Componentes seguem a especificação da Flightory.
+- **Próximo passo:** fechar a lista de componentes (ESCs, rádio, bateria, modelo exato dos motores) e começar a instalação elétrica.
+
+### Fase 1 - Sistema elétrico e voo (em andamento)
+
+- **Objetivo:** transições estáveis entre o voo VTOL e o de asa fixa.
+- **Pontos em aberto:** lista final de componentes; escolha do enlace de vídeo, que define a qualidade da imagem que chega ao detector.
+
+<!-- Modelo para as próximas entradas:
+### Fase N - Nome (concluída em AAAA-MM)
+- Feito:
+- Resultados (métricas):
+- Problemas e como foram resolvidos:
+- Decisões:
+- Próximo passo:
+-->
 
 ## Segurança
 

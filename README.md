@@ -110,7 +110,7 @@ In practice, that means covering larger areas in less time, missing fewer target
 | 5 | Geolocation of detections (lat, lon) | Planned |
 | 6 | Sensor fusion and tracking | Planned |
 
-Details and completion criteria for each phase: [ROADMAP.md](ROADMAP.md). Build log: [PROGRESS.md](PROGRESS.md).
+Details and completion criteria for each phase: [ROADMAP.md](ROADMAP.md). Build log: [PROGRESS.md](PROGRESS.md). Timeline and phase-by-phase discussion: [Timeline and discussion](#timeline-and-discussion).
 
 ## Platform
 
@@ -248,6 +248,48 @@ Starting values, to be revised after the first measurements.
 
 - Each component (fine-tuning, SAHI, tracking, fusion) is removed one at a time to measure its contribution.
 - Results are published in this repository after each phase, including what did not work.
+
+## Timeline and discussion
+
+This section is updated every time a phase ends: what was done, what the results were, what went wrong, what was decided and what comes next. Dates are recorded as phases are completed.
+
+```mermaid
+flowchart LR
+  P0[Phase 0<br/>Airframe]:::done --> P1[Phase 1<br/>Electrical and flight]:::active --> P2[Phase 2<br/>Downlink]:::planned --> P3[Phase 3<br/>Ground detection]:::planned --> P4[Phase 4<br/>Custom dataset]:::planned --> P5[Phase 5<br/>Geolocation]:::planned --> P6[Phase 6<br/>Fusion and tracking]:::planned
+  classDef done fill:#2e7d32,color:#fff,stroke:#1b5e20
+  classDef active fill:#f9a825,color:#000,stroke:#f57f17
+  classDef planned fill:#eceff1,color:#000,stroke:#90a4ae
+```
+
+| Phase | Status | Completed | Key result |
+| --- | --- | --- | --- |
+| 0 - Airframe | Done | 2026-10 | Airframe printed, assembled and painted |
+| 1 - Electrical and flight | In progress | - | - |
+| 2 - Downlink | Planned | - | - |
+| 3 - Ground detection | Planned | - | - |
+| 4 - Custom dataset | Planned | - | - |
+| 5 - Geolocation | Planned | - | - |
+| 6 - Fusion and tracking | Planned | - | - |
+
+### Phase 0 - Airframe (completed 2026-10)
+
+- **Done:** all parts printed, fuselage, wings and V-tail assembled and painted.
+- **Decisions:** LW-PLA for low weight; ASA for parts that need more strength and heat resistance. Components follow the Flightory specification.
+- **Next:** finalize the component list (ESCs, radio, battery, exact motor model) and start the electrical installation.
+
+### Phase 1 - Electrical system and flight (in progress)
+
+- **Goal:** stable transitions between VTOL and fixed-wing flight.
+- **Open points:** final component list; video link choice, which defines the image quality that reaches the detector.
+
+<!-- Template for the next entries:
+### Phase N - Name (completed YYYY-MM)
+- Done:
+- Results (metrics):
+- Problems and how they were solved:
+- Decisions:
+- Next:
+-->
 
 ## Safety
 
