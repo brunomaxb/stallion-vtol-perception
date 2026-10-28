@@ -4,9 +4,43 @@
 
 A 3D-printed fixed-wing VTOL UAV (Flightory Stallion) built as an aerial perception platform. The aircraft streams video and telemetry to a ground station, where an object detection model (YOLO) identifies trained classes such as people and vehicles. Later phases add geolocated detections and multi-sensor fusion.
 
-Target civilian applications: search and rescue, survey of hazardous areas (e.g. humanitarian demining support) and inspection.
+Applications: tactical reconnaissance, search and rescue (SAR), survey of hazardous areas (e.g. humanitarian demining support), disaster monitoring and inspection.
 
 <img src="docs/images/airframe-assembled.jpg" alt="Assembled airframe" width="420">
+
+## The problem
+
+Reconnaissance drone operators have to find people and vehicles on the ground from RGB camera imagery, usually as live video, over long periods and often in poor light or bad weather. Small, camouflaged or partially hidden targets get missed, and operator fatigue grows with mission time.
+
+Sensor fusion, backed by an AI model trained to recognize these patterns, gives the operator decisive support in tactical reconnaissance, search and rescue, survey of hazardous areas and disaster monitoring.
+
+## Why it matters
+
+Autonomous and human-operated systems will increasingly be employed together with AI, extending the operational reach of small teams well beyond what was possible before.
+
+In practice, that means covering larger areas in less time, missing fewer targets and giving the operator the target's location, not just an image. In search and rescue, every minute saved raises the chance of finding a person alive.
+
+## Limitations of current approaches
+
+- **Night and low light:** RGB cameras lose most of their detection capability.
+- **Small targets:** at altitude a person spans only a few pixels, and detectors trained on ground-level imagery (such as COCO) perform worse at that scale.
+- **Motion:** fast targets and airframe vibration cause blur and lost tracks.
+- **False positives:** shadows, rocks, vegetation and debris get mistaken for people or vehicles, and every false alarm has to be dismissed by the operator.
+- **Adverse weather:** rain, fog, smoke and dust degrade the image.
+- **Camouflage and occlusion:** targets under vegetation or partially covered.
+- **Single sensor:** thermal cameras help at night but have low resolution, suffer from thermal crossover (target and background at the same temperature) and carry no color or texture.
+- **Detection without location:** most solutions mark the target on screen but do not provide map coordinates.
+- **Weight, power and link:** small platforms cannot carry heavy onboard compute, and the video downlink is limited by bandwidth and latency.
+- **Operator workload:** hours of live video lead to fatigue and missed targets.
+
+## How this project addresses them
+
+- Fusing RGB with a second sensor (thermal or LiDAR) to keep detection working at night and in poor conditions.
+- Running inference on the ground station, which allows larger models without adding weight to the aircraft.
+- Fine-tuning on custom aerial imagery, focused on small targets seen from above.
+- Tracking across frames to cut false positives and follow moving targets.
+- Geolocation: every detection comes with latitude and longitude.
+- Metrics measured and published at each phase.
 
 ## Status
 
