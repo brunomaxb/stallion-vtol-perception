@@ -160,13 +160,94 @@ flowchart LR
 
 Planned software stack: ArduPilot, Mission Planner / QGroundControl, pymavlink or MAVROS, ROS 2, Python, PyTorch, Ultralytics YOLO, OpenCV.
 
-## Metrics to report
+## How the system works
 
-- mAP@0.5 per class on a held-out aerial test set
-- Inference FPS on the ground-station hardware
-- End-to-end latency (camera to detection on screen)
-- Geolocation error in meters against targets with known GPS coordinates
-- Detection gain from sensor fusion versus camera only
+### Mission flow
+
+1. **Planning:** the operator draws the search area in Mission Planner or QGroundControl and generates a survey (lawnmower) pattern. Altitude and line spacing are chosen so that a person still spans enough pixels to be detected.
+2. **Takeoff and transit:** VTOL takeoff, transition to fixed-wing flight and execution of the survey at cruise speed.
+3. **On board:** the gimbal-stabilized camera captures video while the flight controller records position (GPS), attitude (IMU) and gimbal angles. Video and MAVLink telemetry are streamed to the ground station.
+4. **Synchronization:** each video frame is timestamped and paired with the telemetry sample for the same instant (interpolated). At 60-70 km/h the aircraft moves about 1.8 m every 100 ms, so time alignment directly affects geolocation accuracy.
+5. **Detection:** the YOLO model processes each frame (optionally in tiles with SAHI for small targets) and returns boxes, classes and confidence.
+6. **Tracking:** ByteTrack links detections across frames and assigns an ID to each target. A target is confirmed only after it appears in several consecutive frames, which filters out isolated false alarms.
+7. **Fusion (phase 6):** detections from the RGB and thermal (or LiDAR) streams are combined, giving more weight to the modality that works best in the current light.
+8. **Geolocation:** a ray is cast from the camera through the center of each confirmed box, using aircraft position, attitude, gimbal angles and camera calibration, and intersected with the ground (flat terrain first, then an elevation model). The result is latitude, longitude and an uncertainty estimate.
+9. **Operator console:** each target appears as a pin on the map with an image crop, class, confidence and time. The operator confirms or dismisses it, and that feedback is stored to improve the dataset.
+10. **Return and logging:** RTL and landing. Video, telemetry and detections are saved for post-mission analysis and evaluation.
+
+### Software modules
+
+| Module | Input | Output | Main tools |
+| --- | --- | --- | --- |
+| Flight control | Mission, sensors | Stable flight, telemetry | ArduPilot (QuadPlane) |
+| Video receiver | Downlink stream | Timestamped frames | OpenCV / GStreamer |
+| Telemetry bridge | MAVLink | Pose per timestamp | pymavlink or MAVROS |
+| Detector | Frames | Boxes, classes, confidence | Ultralytics YOLO, SAHI |
+| Tracker | Detections over time | Tracks with IDs | ByteTrack |
+| Fusion (phase 6) | RGB + thermal/LiDAR detections | Fused detections | Late fusion, then learned fusion |
+| Geolocation | Tracks + pose + calibration | Lat, lon, uncertainty | Camera model + terrain |
+| Operator console | Geolocated targets | Map, alerts, operator feedback | ROS 2 / web map |
+
+### Operating modes
+
+- **Assisted:** the operator watches the video and the system highlights candidates.
+- **Alert-only:** the operator monitors the map and receives only confirmed, geolocated targets.
+
+## Evaluation
+
+### Data
+
+- **Public datasets** for pretraining and comparison: VisDrone (RGB), HIT-UAV (thermal) and WiSARD (RGB + thermal, search and rescue).
+- **Custom dataset** from this project's flights, split into train, validation and test **by flight**: frames from the same flight never appear in both training and test, which avoids inflated results.
+- The test set is stratified by altitude, time of day (day, dusk, night) and terrain type.
+
+### Baselines and comparisons
+
+Every improvement is measured against the same reference: a pretrained YOLO with no changes. Each new step is added on top and compared:
+
+1. Pretrained YOLO (baseline)
+2. + fine-tuning on custom aerial data
+3. + slicing inference (SAHI)
+4. + tracking (ByteTrack)
+5. + RGB-thermal fusion
+
+### Metrics
+
+| Level | Metric | What it shows |
+| --- | --- | --- |
+| Detection | Precision, recall, mAP@0.5 and mAP@0.5:0.95 per class | Detector quality |
+| Detection | Recall by target size (small, medium, large) | Performance on small targets seen from altitude |
+| Tracking | MOTA, IDF1, ID switches | Track stability |
+| System | FPS on the ground station | Real-time capability |
+| System | End-to-end latency (capture to alert) | Operational usefulness |
+| System | False alarms per minute of flight | Operator workload |
+| Geolocation | Mean error and 95th-percentile error (m) | Accuracy of target coordinates |
+| Mission | Time to first detection, share of targets found, area covered per minute | Value in a real search |
+
+### Flight test protocol
+
+- Targets (people and vehicles) placed at positions surveyed with GPS, in an authorized area.
+- Repeated passes at several altitudes, during day and at night, with at least three flights per condition.
+- Every flight logs video, telemetry, detections and ground truth, so results can be recomputed offline.
+
+### Initial targets per phase
+
+Starting values, to be revised after the first measurements.
+
+| Phase | Metric | Initial target |
+| --- | --- | --- |
+| 2 | Video latency to the ground station | ≤ 300 ms |
+| 3 | Detection throughput on the ground station | ≥ 15 FPS |
+| 3 | End-to-end latency (capture to alert) | ≤ 500 ms |
+| 4 | mAP@0.5 on the custom test set | ≥ 10 points above the pretrained baseline |
+| 5 | Geolocation error (95th percentile) at ~100 m altitude | ≤ 10 m |
+| 6 | Night-time recall versus RGB only | ≥ 20% relative gain |
+| 6 | False alarms | ≤ 1 per minute of flight |
+
+### Ablation and reporting
+
+- Each component (fine-tuning, SAHI, tracking, fusion) is removed one at a time to measure its contribution.
+- Results are published in this repository after each phase, including what did not work.
 
 ## Safety
 

@@ -111,13 +111,94 @@ A inferência roda na estação terrestre, não a bordo. Assim a aeronave fica l
 
 Stack de software previsto: ArduPilot, Mission Planner / QGroundControl, pymavlink ou MAVROS, ROS 2, Python, PyTorch, Ultralytics YOLO, OpenCV.
 
-## Métricas
+## Como o sistema funciona
 
-- mAP@0.5 por classe em um conjunto de teste aéreo separado
-- FPS de inferência no hardware da estação terrestre
-- Latência ponta a ponta (câmera até a detecção na tela)
-- Erro de georreferenciamento em metros, contra alvos com coordenada GPS conhecida
-- Ganho da fusão de sensores em relação à câmera sozinha
+### Fluxo da missão
+
+1. **Planejamento:** o operador desenha a área de busca no Mission Planner ou no QGroundControl e gera um padrão de varredura. Altitude e espaçamento entre as linhas são escolhidos para que uma pessoa ainda ocupe pixels suficientes para ser detectada.
+2. **Decolagem e deslocamento:** decolagem VTOL, transição para voo de asa fixa e execução da varredura em velocidade de cruzeiro.
+3. **A bordo:** a câmera estabilizada pelo gimbal grava o vídeo enquanto a controladora registra posição (GPS), atitude (IMU) e ângulos do gimbal. Vídeo e telemetria MAVLink são transmitidos para a estação terrestre.
+4. **Sincronização:** cada quadro de vídeo recebe um horário e é pareado com a telemetria do mesmo instante (interpolada). A 60-70 km/h a aeronave anda cerca de 1,8 m a cada 100 ms, então o alinhamento no tempo afeta diretamente a precisão do georreferenciamento.
+5. **Detecção:** o modelo YOLO processa cada quadro (opcionalmente em recortes com SAHI, para alvos pequenos) e devolve caixas, classes e confiança.
+6. **Rastreamento:** o ByteTrack liga as detecções entre quadros e dá um ID a cada alvo. O alvo só é confirmado depois de aparecer em vários quadros seguidos, o que filtra alarmes falsos isolados.
+7. **Fusão (fase 6):** as detecções do RGB e do térmico (ou LiDAR) são combinadas, com mais peso para a modalidade que funciona melhor na luz do momento.
+8. **Georreferenciamento:** um raio sai da câmera pelo centro de cada caixa confirmada, usando posição e atitude da aeronave, ângulos do gimbal e calibração da câmera, e é cruzado com o solo (primeiro terreno plano, depois um modelo de elevação). O resultado é latitude, longitude e uma estimativa de incerteza.
+9. **Console do operador:** cada alvo aparece como um marcador no mapa, com o recorte da imagem, a classe, a confiança e o horário. O operador confirma ou descarta, e essa resposta é guardada para melhorar o dataset.
+10. **Retorno e registro:** RTL e pouso. Vídeo, telemetria e detecções ficam salvos para análise pós-missão e avaliação.
+
+### Módulos de software
+
+| Módulo | Entrada | Saída | Ferramentas principais |
+| --- | --- | --- | --- |
+| Controle de voo | Missão, sensores | Voo estável, telemetria | ArduPilot (QuadPlane) |
+| Receptor de vídeo | Sinal do enlace | Quadros com horário | OpenCV / GStreamer |
+| Ponte de telemetria | MAVLink | Posição e atitude por instante | pymavlink ou MAVROS |
+| Detector | Quadros | Caixas, classes, confiança | Ultralytics YOLO, SAHI |
+| Rastreador | Detecções ao longo do tempo | Trilhas com ID | ByteTrack |
+| Fusão (fase 6) | Detecções RGB + térmico/LiDAR | Detecções fundidas | Fusão tardia, depois fusão aprendida |
+| Georreferenciamento | Trilhas + posição + calibração | Lat, lon, incerteza | Modelo de câmera + terreno |
+| Console do operador | Alvos georreferenciados | Mapa, alertas, resposta do operador | ROS 2 / mapa web |
+
+### Modos de operação
+
+- **Assistido:** o operador acompanha o vídeo e o sistema destaca os candidatos.
+- **Só alertas:** o operador acompanha o mapa e recebe apenas alvos confirmados e georreferenciados.
+
+## Avaliação
+
+### Dados
+
+- **Datasets públicos** para pré-treino e comparação: VisDrone (RGB), HIT-UAV (térmico) e WiSARD (RGB + térmico, busca e salvamento).
+- **Dataset próprio**, dos voos deste projeto, dividido em treino, validação e teste **por voo**: quadros de um mesmo voo nunca aparecem no treino e no teste ao mesmo tempo, o que evita resultados inflados.
+- O conjunto de teste é estratificado por altitude, horário (dia, crepúsculo, noite) e tipo de terreno.
+
+### Linhas de base e comparações
+
+Toda melhoria é medida contra a mesma referência: um YOLO pré-treinado, sem alterações. Cada etapa nova entra por cima e é comparada:
+
+1. YOLO pré-treinado (linha de base)
+2. + fine-tuning com dados aéreos próprios
+3. + inferência por recortes (SAHI)
+4. + rastreamento (ByteTrack)
+5. + fusão RGB-térmico
+
+### Métricas
+
+| Nível | Métrica | O que mostra |
+| --- | --- | --- |
+| Detecção | Precisão, recall, mAP@0.5 e mAP@0.5:0.95 por classe | Qualidade do detector |
+| Detecção | Recall por tamanho do alvo (pequeno, médio, grande) | Desempenho em alvos pequenos vistos do alto |
+| Rastreamento | MOTA, IDF1, trocas de ID | Estabilidade das trilhas |
+| Sistema | FPS na estação terrestre | Capacidade de tempo real |
+| Sistema | Latência ponta a ponta (captura até o alerta) | Utilidade operacional |
+| Sistema | Alarmes falsos por minuto de voo | Carga do operador |
+| Georreferenciamento | Erro médio e erro do percentil 95 (m) | Precisão das coordenadas do alvo |
+| Missão | Tempo até a primeira detecção, percentual de alvos encontrados, área coberta por minuto | Valor numa busca real |
+
+### Protocolo de teste em voo
+
+- Alvos (pessoas e veículos) posicionados em pontos levantados com GPS, em área autorizada.
+- Passagens repetidas em várias altitudes, de dia e à noite, com pelo menos três voos por condição.
+- Cada voo registra vídeo, telemetria, detecções e a verdade de campo, para que os resultados possam ser recalculados depois.
+
+### Metas iniciais por fase
+
+Valores de partida, a serem revistos depois das primeiras medições.
+
+| Fase | Métrica | Meta inicial |
+| --- | --- | --- |
+| 2 | Latência do vídeo até a estação terrestre | ≤ 300 ms |
+| 3 | Taxa de detecção na estação terrestre | ≥ 15 FPS |
+| 3 | Latência ponta a ponta (captura até o alerta) | ≤ 500 ms |
+| 4 | mAP@0.5 no conjunto de teste próprio | ≥ 10 pontos acima da linha de base |
+| 5 | Erro de georreferenciamento (percentil 95) a ~100 m de altitude | ≤ 10 m |
+| 6 | Recall noturno em relação ao RGB sozinho | ganho relativo ≥ 20% |
+| 6 | Alarmes falsos | ≤ 1 por minuto de voo |
+
+### Ablação e publicação dos resultados
+
+- Cada componente (fine-tuning, SAHI, rastreamento, fusão) é retirado um de cada vez para medir sua contribuição.
+- Os resultados são publicados neste repositório ao fim de cada fase, incluindo o que não funcionou.
 
 ## Segurança
 
